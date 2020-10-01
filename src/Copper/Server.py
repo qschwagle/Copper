@@ -1,18 +1,8 @@
 import asyncio 
 import datetime
 import re
-from ResponseHeader import ResponseHeader, bad_request_400, ok_200
-
-
-class HttpRequest:
-    def __init__(self):
-        self.__method = None
-
-    def set_http_method(self, method):
-        self.__method = method
-
-    def get_http_method(self):
-        return self.__method
+from Copper.Response import Response, bad_request_400, ok_200
+from Copper.Request  import Request
 
 
 async def process_request(reader):
@@ -23,44 +13,43 @@ async def process_request(reader):
        Note: Algorithm for searching HEADER termination is inefficient.
        Note: Request type and Content-Length must be read to read body
     """
-    finished_reading = False
     length = 1000
     matches = None 
     buffer = bytes("", "utf-8")
-    req = HttpRequest()
+    req = Request()
     while not matches:
         read_data = await reader.read(length)
         if len(buffer) == 0:
-            matcher = re.compile(bytes("(GET|HEAD|POST|PUT|DELETE|CONNECT|OPTIONS|TRACE)", "utf-8"))
+            matcher = re.compile(bytes("(?P<method>(GET|HEAD|POST|PUT|DELETE|CONNECT|OPTIONS|TRACE)) (?P<path>([0-9_*/]+))", "utf-8"))
             req_type_match = matcher.match(read_data)
             if req_type_match:
-                req.set_http_method(req_type_match.group(0))
+                req.set_http_method(req_type_match.group('method'))
+                req.set_path(req_type_match.group('path'))
             else:
                 return None
-
         buffer += read_data
         matches = re.search(bytes("[\r][\n][\r][\n]", "utf-8"), buffer)
     return req
 
 
 async def responder(reader, writer):
+    """
+    server responder
+    """
     request = await process_request(reader)
     if request is not None:
-        header = ok_200()
-        header.set_field("Content-Type", "text/html; charset=utf-8")
-        body = bytes("<html><body><h1>hello world</h1></body></html>","utf-8")
-        header.set_field("Content-Length", str(len(body)))
-        header_out =  header.generate()
-        writer.write(header_out + body)
+        res = ok_200()
+        res.set_field("Content-Type", "text/html; charset=utf-8")
+        res.set_body(bytes("<html><body><h1>hello world</h1></body></html>","utf-8"))
+        writer.write(res.generate())
         await writer.drain()
     else:
-        header = bad_request_400()
-        header_out = header.generate()
-        writer.write(header_out)
+        res = bad_request_400()
+        writer.write(res.generate())
         await writer.drain()
     writer.close()
 
 
-async def server():
-    srv = await asyncio.start_server(responder, host="0.0.0.0", port="8080")
+async def server(host, port):
+    srv = await asyncio.start_server(responder, host=host, port=port)
     await srv.serve_forever()

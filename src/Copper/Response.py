@@ -39,7 +39,7 @@ class Response:
             if "Content-Length" not in self.__header_fields:
                 self.set_field("Content-Length", str(0))
         else:
-            self.set_field("Content-Length", str(len(self.__body))
+            self.set_field("Content-Length", str(len(self.__body)))
 
         if "Connection" not in self.__header_fields:
             self.set_field("Connection", "closed")
@@ -49,8 +49,10 @@ class Response:
         for (k,v) in self.__header_fields.items():
             out += (k + ": " + v + "\r\n")
         out += "\r\n"
-        return bytes(out, "utf-8") + self.__body
-
+        if self.__body:
+            return bytes(out, "utf-8") + self.__body
+        else:
+            return bytes(out, "utf-8")
 
 def bad_request_400():
     header = Response()
@@ -60,6 +62,6 @@ def bad_request_400():
 
 def ok_200():
     header = Response()
-    header.set_header_line("HTTP/1.1", 200, "OK")
+    header.set_header_line("HTTP/1.1", 200, "Ok")
     return header
 
