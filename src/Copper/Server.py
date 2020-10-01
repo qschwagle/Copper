@@ -1,7 +1,7 @@
 import asyncio 
 import datetime
 import re
-from ResponseHeader import ResponseHeader
+from ResponseHeader import ResponseHeader, bad_request_400, ok_200
 
 
 class HttpRequest:
@@ -43,16 +43,10 @@ async def process_request(reader):
     return req
 
 
-class HttpResponse:
-    def __init__(self):
-        pass
-
-
 async def responder(reader, writer):
     request = await process_request(reader)
     if request is not None:
-        header = ResponseHeader()
-        header.ok_request()
+        header = ok_200()
         header.set_field("Content-Type", "text/html; charset=utf-8")
         body = bytes("<html><body><h1>hello world</h1></body></html>","utf-8")
         header.set_field("Content-Length", str(len(body)))
@@ -60,9 +54,8 @@ async def responder(reader, writer):
         writer.write(header_out + body)
         await writer.drain()
     else:
-        header = ResponseHeader()
-        header.bad_request()
-        header_out =  header.generate()
+        header = bad_request_400()
+        header_out = header.generate()
         writer.write(header_out)
         await writer.drain()
     writer.close()

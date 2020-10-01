@@ -43,11 +43,16 @@ class ResponseHeader:
             out += (k + ": " + v + "\r\n")
         out += "\r\n"
         return bytes(out, "utf-8")
-    
-    def bad_request(self):
-        """Note: Migrate to builder"""
-        self.set_header_line("HTTP/1.1", 400, "Bad Request")
 
-    def ok_request(self):
-        """Note: Migrate to builder"""
-        self.set_header_line("HTTP/1.1", 200, "OK")
+
+def bad_request_400():
+    header = ResponseHeader()
+    header.set_header_line("HTTP/1.1", 400, "Bad Request")
+    return header
+
+
+def ok_200():
+    header = ResponseHeader()
+    header.set_header_line("HTTP/1.1", 200, "OK")
+    return header
+
