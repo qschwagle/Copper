@@ -1,7 +1,7 @@
 import datetime
 
 
-class ResponseHeader:
+class Response:
     """Represents a Response header.
        set_header_line must be set at the very least before being sent
     """
@@ -10,6 +10,7 @@ class ResponseHeader:
         self.__version = ""
         self.__status = ""
         self.__status_value = 0
+        self.__body = None
 
     def set_field(self, key, value):
         self.__header_fields[key] = value
@@ -22,6 +23,9 @@ class ResponseHeader:
         self.__status = status
         self.__status_value = value
 
+    def set_body(self, body):
+        self.__body = body
+
     def generate(self):
         """Generates bytes object to be sent out to client (possibly with body)"""
         # Set the date time 
@@ -31,8 +35,11 @@ class ResponseHeader:
         if "Date" not in self.__header_fields:
             self.set_field("Date", current_time.strftime("%a, %d %b %Y %H:%M:%S GMT"))
 
-        if "Content-Length" not in self.__header_fields:
-            self.set_field("Content-Length", str(0))
+        if self.__body is None:
+            if "Content-Length" not in self.__header_fields:
+                self.set_field("Content-Length", str(0))
+        else:
+            self.set_field("Content-Length", str(len(self.__body))
 
         if "Connection" not in self.__header_fields:
             self.set_field("Connection", "closed")
@@ -42,17 +49,17 @@ class ResponseHeader:
         for (k,v) in self.__header_fields.items():
             out += (k + ": " + v + "\r\n")
         out += "\r\n"
-        return bytes(out, "utf-8")
+        return bytes(out, "utf-8") + self.__body
 
 
 def bad_request_400():
-    header = ResponseHeader()
+    header = Response()
     header.set_header_line("HTTP/1.1", 400, "Bad Request")
     return header
 
 
 def ok_200():
-    header = ResponseHeader()
+    header = Response()
     header.set_header_line("HTTP/1.1", 200, "OK")
     return header
 
