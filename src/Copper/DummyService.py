@@ -1,7 +1,7 @@
 from Copper.Request import Request
 from Copper.Response import Response, ok_200
 
-class FileManager:
+class DummyService:
     """Service mountable to Server"""
     def __init__(self):
         pass

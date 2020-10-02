@@ -4,6 +4,7 @@ import re
 from Copper.Response    import Response, bad_request_400, ok_200
 from Copper.Request     import Request
 from Copper.FileManager import FileManager
+from Copper.DummyService import DummyService
 
 
 async def process_request(reader):
@@ -32,27 +33,12 @@ async def process_request(reader):
         matches = re.search(bytes("[\r][\n][\r][\n]", "utf-8"), buffer)
     return req
 
-async def responder(reader, writer):
-    """
-    server responder
-    """
-    request = await process_request(reader)
-    if request is not None:
-        res = ok_200()
-        res["Content-Type"] = "text/html; charset=utf-8"
-        res.set_body(bytes("<html><body><h1>hello world</h1></body></html>","utf-8"))
-        writer.write(res.generate())
-        await writer.drain()
-    else:
-        res = bad_request_400()
-        writer.write(res.generate())
-        await writer.drain()
-    writer.close()
 
 class Server:
     def __init__(self):
         self._host = None
         self._port = None
+        self._service = DummyService()
 
     @property
     def host(self):
@@ -70,9 +56,33 @@ class Server:
     def port(self, p):
         self._port = p
 
+    @property
+    def service(self):
+        return self._service
+
+    @service.setter
+    def service(self, s):
+        self._service = s
+
+
     def run(self):
         asyncio.run(self.server(self._host, self._port))
 
     async def server(self, host, port):
-        srv = await asyncio.start_server(responder, host=host, port=port)
+        srv = await asyncio.start_server(self.responder, host=host, port=port)
         await srv.serve_forever()
+
+    async def responder(self, reader, writer):
+        """
+        server responder
+        """
+        request = await process_request(reader)
+        if request is not None:
+            res = await self._service.process(request)
+            writer.write(res.generate())
+            await writer.drain()
+        else:
+            res = bad_request_400()
+            writer.write(res.generate())
+            await writer.drain()
+        writer.close()
