@@ -1,5 +1,5 @@
 from Copper.Request import Request
-from Copper.Response import Response, ok_200, not_found_404
+from Copper.Response import Response, ok_200, not_found_404, method_not_allowed_405
 
 class DummyService:
     """Service mountable to Server"""
@@ -8,7 +8,10 @@ class DummyService:
 
     async def process(self, req: Request) -> Response:
         print(req.resource)
-        if req.resource == b'/':
+        if req.resource == b'/get' and req.method != b'GET':
+            res = method_not_allowed_405(['GET'])
+            return res
+        elif req.resource == b'/':
             res = ok_200()
             res["Content-Type"] = "text/html; charset=utf-8"
             res.set_body(bytes("<html><body><h1>hello world</h1></body></html>","utf-8"))

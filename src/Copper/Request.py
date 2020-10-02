@@ -4,11 +4,13 @@ class Request:
         self._resource = None 
         self._headers = {}
 
-    def set_http_method(self, method):
-        self._method = method
-
-    def get_http_method(self):
+    @property
+    def method(self):
         return self._method
+
+    @method.setter
+    def method(self, method):
+        self._method = method
 
     def __getitem__(self, key):
         return self._headers[key]

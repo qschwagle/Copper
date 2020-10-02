@@ -20,6 +20,7 @@ async def my_server(s,r):
     await stopper 
     await srv
 
+method_not_allowed_matcher = re.compile('HTTP/1[.]1[ ]405[ ]Method[ ]Not[ ]Allowed')
 bad_request_matcher = re.compile('HTTP/1[.]1[ ]400[ ]Bad[ ]Request')
 not_found_matcher = re.compile('HTTP/1[.]1[ ]404[ ]Not[ ]Found')
 ok_request_matcher = re.compile('HTTP/1[.]1[ ]200[ ]Ok')
@@ -98,6 +99,26 @@ class TestVerbs:
                 time.sleep(0.05)
             buffer = TestVerbs.send_request("GET", "/hello")
             res = not_found_matcher.match(bytes.decode(buffer,'utf-8'))
+            if res:
+                assert(True)
+            else:
+                assert(False)
+        except Exception as err:
+            raise err
+        finally:
+            # always join
+            sender.put([True])
+            p.join()
+    def test_method_not_allowed(self):
+        reader = Queue()
+        sender = Queue()
+        p = Process(target=TestVerbs.start_server, args=(reader, sender))
+        try:
+            p.start()
+            while reader.empty():
+                time.sleep(0.05)
+            buffer = TestVerbs.send_request("POST", "/get")
+            res = method_not_allowed_matcher.match(bytes.decode(buffer,'utf-8'))
             if res:
                 assert(True)
             else:

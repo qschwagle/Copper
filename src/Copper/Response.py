@@ -73,3 +73,14 @@ def not_found_404():
     header = Response()
     header.set_header_line("HTTP/1.1", 404, "Not Found")
     return header
+
+def method_not_allowed_405(allowed_methods):
+    header = Response()
+    header.set_header_line("HTTP/1.1", 405, "Method Not Allowed")
+    allowed = ""
+    for method in allowed_methods[:-1]:
+        allowed += method + ', '
+    allowed += allowed_methods[-1]
+    header["Allow"] = allowed
+    return header
+

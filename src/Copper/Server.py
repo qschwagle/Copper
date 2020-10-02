@@ -25,7 +25,7 @@ async def process_request(reader):
             matcher = re.compile(bytes("(?P<method>(GET|HEAD|POST|PUT|DELETE|CONNECT|OPTIONS|TRACE)) (?P<resource>([*]|(/[0-9_a-zA-Z%]*)+)) (?P<http_version>(HTTP/1[.](0|1)))([\r][\n])", "utf-8"))
             req_type_match = matcher.match(read_data)
             if req_type_match:
-                req.set_http_method(req_type_match.group('method'))
+                req.method = req_type_match.group('method')
                 req.resource = req_type_match.group('resource')
             else:
                 return None
