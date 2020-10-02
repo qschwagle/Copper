@@ -69,3 +69,7 @@ def ok_200():
     header.set_header_line("HTTP/1.1", 200, "Ok")
     return header
 
+def not_found_404():
+    header = Response()
+    header.set_header_line("HTTP/1.1", 404, "Not Found")
+    return header

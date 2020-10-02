@@ -26,7 +26,7 @@ async def process_request(reader):
             req_type_match = matcher.match(read_data)
             if req_type_match:
                 req.set_http_method(req_type_match.group('method'))
-                req.set_resource(req_type_match.group('resource'))
+                req.resource = req_type_match.group('resource')
             else:
                 return None
         buffer += read_data

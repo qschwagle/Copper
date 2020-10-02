@@ -1,25 +1,29 @@
 class Request:
     def __init__(self):
-        self.__method = None
-        self.__resource = None 
-        self.__headers = {}
+        self._method = None
+        self._resource = None 
+        self._headers = {}
 
     def set_http_method(self, method):
-        self.__method = method
+        self._method = method
 
     def get_http_method(self):
-        return self.__method
+        return self._method
 
     def __getitem__(self, key):
-        return self.__headers[key]
+        return self._headers[key]
 
     def __setitem__(self, key, value):
-        self.__headers[key] = value
+        self._headers[key] = value
 
     def __delitem__(self, key):
-        del self.__headers[key]
+        del self._headers[key]
 
-
-    def set_resource(self, resource):
-        self.__resource = resource
+    @property
+    def resource(self):
+        return self._resource
+    
+    @resource.setter
+    def resource(self, resource):
+        self._resource = resource
 
