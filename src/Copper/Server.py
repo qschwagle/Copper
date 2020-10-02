@@ -22,7 +22,7 @@ async def process_request(reader):
     while not matches:
         read_data = await reader.read(length)
         if len(buffer) == 0:
-            matcher = re.compile(bytes("(?P<method>(GET|HEAD|POST|PUT|DELETE|CONNECT|OPTIONS|TRACE)) (?P<resource>([*]|(/[0-9_a-zA-Z%]*)+)) (?P<http_version>(HTTP/1[.](0|1)))([\r][\n])", "utf-8"))
+            matcher = re.compile(bytes("(?P<method>(GET|HEAD|POST|PUT|DELETE|CONNECT|OPTIONS|TRACE)) (?P<resource>([*]|(/[0-9_a-zA-Z%]*)+)) (?P<http_version>(HTTP/1[.](0|1)))(?=([\r][\n]))", "utf-8"))
             req_type_match = matcher.match(read_data)
             if req_type_match:
                 req.method = req_type_match.group('method')
