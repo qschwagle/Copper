@@ -1,8 +1,9 @@
 import asyncio 
 import datetime
 import re
-from Copper.Response import Response, bad_request_400, ok_200
-from Copper.Request  import Request
+from Copper.Response    import Response, bad_request_400, ok_200
+from Copper.Request     import Request
+from Copper.FileManager import FileManager
 
 
 async def process_request(reader):
@@ -20,17 +21,16 @@ async def process_request(reader):
     while not matches:
         read_data = await reader.read(length)
         if len(buffer) == 0:
-            matcher = re.compile(bytes("(?P<method>(GET|HEAD|POST|PUT|DELETE|CONNECT|OPTIONS|TRACE)) (?P<path>([0-9_*/]+))", "utf-8"))
+            matcher = re.compile(bytes("(?P<method>(GET|HEAD|POST|PUT|DELETE|CONNECT|OPTIONS|TRACE)) (?P<resource>([*]|(/[0-9_a-zA-Z%]*)+)) (?P<http_version>(HTTP/1[.](0|1)))([\r][\n])", "utf-8"))
             req_type_match = matcher.match(read_data)
             if req_type_match:
                 req.set_http_method(req_type_match.group('method'))
-                req.set_path(req_type_match.group('path'))
+                req.set_resource(req_type_match.group('resource'))
             else:
                 return None
         buffer += read_data
         matches = re.search(bytes("[\r][\n][\r][\n]", "utf-8"), buffer)
     return req
-
 
 async def responder(reader, writer):
     """
@@ -39,7 +39,7 @@ async def responder(reader, writer):
     request = await process_request(reader)
     if request is not None:
         res = ok_200()
-        res.set_field("Content-Type", "text/html; charset=utf-8")
+        res["Content-Type"] = "text/html; charset=utf-8"
         res.set_body(bytes("<html><body><h1>hello world</h1></body></html>","utf-8"))
         writer.write(res.generate())
         await writer.drain()
@@ -49,7 +49,30 @@ async def responder(reader, writer):
         await writer.drain()
     writer.close()
 
+class Server:
+    def __init__(self):
+        self._host = None
+        self._port = None
 
-async def server(host, port):
-    srv = await asyncio.start_server(responder, host=host, port=port)
-    await srv.serve_forever()
+    @property
+    def host(self):
+        return self._host
+
+    @host.setter
+    def host(self, addr):
+        self._host = addr
+
+    @property
+    def port(self):
+        return self._port
+
+    @port.setter
+    def port(self, p):
+        self._port = p
+
+    def run(self):
+        asyncio.run(self.server(self._host, self._port))
+
+    async def server(self, host, port):
+        srv = await asyncio.start_server(responder, host=host, port=port)
+        await srv.serve_forever()

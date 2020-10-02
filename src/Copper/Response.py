@@ -12,11 +12,15 @@ class Response:
         self.__status_value = 0
         self.__body = None
 
-    def set_field(self, key, value):
+    def __getitem__(self, key):
+        return self.__header_fields[key]
+
+    def __setitem__(self, key, value):
         self.__header_fields[key] = value
 
-    def get_field(self, key):
-        return self.__header_fields[key]
+    def __delitem__(self, key):
+        del self.__header_fields[key]
+
 
     def set_header_line(self, version, value, status):
         self.__version = version
@@ -33,16 +37,16 @@ class Response:
 
         # Check fields which can be autofilled
         if "Date" not in self.__header_fields:
-            self.set_field("Date", current_time.strftime("%a, %d %b %Y %H:%M:%S GMT"))
+            self["Date"] =  current_time.strftime("%a, %d %b %Y %H:%M:%S GMT")
 
         if self.__body is None:
             if "Content-Length" not in self.__header_fields:
-                self.set_field("Content-Length", str(0))
+                self["Content-Length"] =  str(0)
         else:
-            self.set_field("Content-Length", str(len(self.__body)))
+            self["Content-Length"] =  str(len(self.__body))
 
         if "Connection" not in self.__header_fields:
-            self.set_field("Connection", "closed")
+            self["Connection"] =  "closed"
       
         # render output
         out = self.__version + " " + str(self.__status_value) + " " + self.__status + "\r\n"

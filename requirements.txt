@@ -1,0 +1,12 @@
+attrs==20.2.0
+-e git+git@github.com:qschwagle/Copper.git@4c54011ec9a579b6128c08568a35a535e7ad41a6#egg=Copper
+importlib-metadata==2.0.0
+iniconfig==1.0.1
+packaging==20.4
+pluggy==0.13.1
+py==1.9.0
+pyparsing==2.4.7
+pytest==6.1.0
+six==1.15.0
+toml==0.10.1
+zipp==3.2.0

@@ -1,9 +1,8 @@
 import asyncio 
 
-from Server import server
+from Server import Server
 
-async def main():
-    print("Hello, World")
-    await server('0.0.0.0', '8080')
-
-asyncio.run(main())
+srv = Server()
+srv.host = "0.0.0.0"
+srv.port = "8080"
+srv.run()
