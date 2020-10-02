@@ -1,5 +1,7 @@
 from Copper.Request import Request
 from Copper.Response import Response, ok_200, method_not_allowed_405
+import re
+import os 
 
 class FileManager:
     """Service mountable to Server"""
@@ -21,7 +23,7 @@ class FileManager:
 
     @serving_directory.setter
     def serving_directory(self, sd):
-        """future: recursively checks for permissions for this directory and below"""
+        """sets the directory from which files will be referenced"""
         self._serving_directory = sd
 
     async def get_file(self, path):
