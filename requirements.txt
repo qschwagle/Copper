@@ -1,5 +1,4 @@
 attrs==20.2.0
--e git+git@github.com:qschwagle/Copper.git@3be5a8eb246465b8eb25348731c28fb5038f6253#egg=Copper
 flake8==3.8.3
 importlib-metadata==2.0.0
 iniconfig==1.0.1
